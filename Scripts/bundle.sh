@@ -8,7 +8,7 @@ CONFIG="${1:-release}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="$ROOT/build/DumSim.app"
 VERSION="0.1.0"
-BUNDLE_ID="me.ntos.dum-sim"
+BUNDLE_ID="io.github.ricsantos.dum-sim"
 
 cd "$ROOT"
 
