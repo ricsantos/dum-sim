@@ -93,6 +93,14 @@ returns it to the icon.
 
 The panel floats above full screen apps and joins every Space.
 
+### More than one simulator booted
+
+The panel grows into a picker. Each booted simulator gets a card with a live
+screenshot, so you can tell an iPhone from an iPad at a glance. Click a card to
+copy there. Tick "Remember" to pin that device and skip the picker next time.
+
+The CLI reports the ambiguity instead, and lists the UDIDs to choose from.
+
 ## CLI usage
 
 ```

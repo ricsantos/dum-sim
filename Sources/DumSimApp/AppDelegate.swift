@@ -30,6 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func configureDropWindow() {
         dropWindow.onDrop = { [weak self] urls in self?.handleDrop(urls) }
         dropWindow.onUserMove = { [weak self] in self?.preferences.hasCustomPosition = true }
+        dropWindow.keepVisible = { [weak self] in self?.preferences.showDropWindow ?? false }
         updateWindowSubtitle()
 
         // The status item reports a usable frame only once the menu bar lays it
@@ -83,7 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func updateWindowSubtitle() {
-        let device = (try? resolvedDevice())?.displayName ?? "No simulator booted"
+        let device = targetDescription()
         let destination: String
         switch preferences.destinationChoice {
         case "photos": destination = "Photos"
@@ -199,10 +200,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func targetSummary() -> String {
-        guard let device = try? resolvedDevice() else {
+        "Target: \(targetDescription())"
+    }
+
+    /// Names the target, or says how many simulators are competing for it.
+    private func targetDescription() -> String {
+        do {
+            return try Simulator.resolve(preferences.deviceUDID).displayName
+        } catch let error as Simulator.LookupError {
+            if case .ambiguous(_, let matches) = error {
+                return "\(matches.count) simulators booted"
+            }
+            return "No simulator booted"
+        } catch {
             return "No simulator booted"
         }
-        return "Target: \(device.displayName)"
     }
 
     private func deviceMenu() -> NSMenu {
@@ -305,40 +317,79 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // MARK: - Import
 
-    private func resolvedDevice() throws -> Simulator {
-        try Simulator.resolve(preferences.deviceUDID)
-    }
-
     private func handleDrop(_ urls: [URL]) {
         guard !isBusy else { return }
         isBusy = true
         statusItem.button?.appearsDisabled = true
 
-        let destination = preferences.forcedDestination
         let query = preferences.deviceUDID
-        let shouldOpen = preferences.openAfterDrop
 
         Task {
-            let outcome = await Task.detached(priority: .userInitiated) { () -> Outcome in
+            let resolution = await Task.detached(priority: .userInitiated) { () -> Resolution in
                 do {
-                    let device = try Simulator.resolve(query)
-                    let report = Importer.import(urls, into: device, destination: destination)
-                    if shouldOpen, let first = report.results.first {
-                        try? Importer.open(first.destination, on: device)
-                    }
-                    return .finished(device: device, report: report)
+                    return .device(try Simulator.resolve(query))
+                } catch let error as Simulator.LookupError {
+                    if case .ambiguous(_, let matches) = error { return .choose(matches) }
+                    return .failed(error.localizedDescription)
                 } catch {
-                    return .failed(message: error.localizedDescription)
+                    return .failed(error.localizedDescription)
                 }
             }.value
 
-            present(outcome)
-            isBusy = false
-            statusItem.button?.appearsDisabled = false
-            if !preferences.showDropWindow {
-                dropWindow.hide()
+            switch resolution {
+            case .device(let device):
+                await runImport(urls, on: device)
+
+            case .choose(let matches):
+                // The drop panel itself grows into the picker.
+                placeUnderIconIfDefault()
+                dropWindow.show()
+                dropWindow.showChooser(for: matches) { [weak self] device, remember in
+                    guard let self else { return }
+                    guard let device else {
+                        self.finishDrop()
+                        return
+                    }
+                    if remember { self.preferences.deviceUDID = device.udid }
+                    Task { await self.runImport(urls, on: device) }
+                }
+
+            case .failed(let message):
+                present(.failed(message: message))
+                finishDrop()
             }
         }
+    }
+
+    private func runImport(_ urls: [URL], on device: Simulator) async {
+        let destination = preferences.forcedDestination
+        let shouldOpen = preferences.openAfterDrop
+
+        let report = await Task.detached(priority: .userInitiated) { () -> ImportReport in
+            let report = Importer.import(urls, into: device, destination: destination)
+            if shouldOpen, let first = report.results.first {
+                try? Importer.open(first.destination, on: device)
+            }
+            return report
+        }.value
+
+        present(.finished(device: device, report: report))
+        finishDrop()
+    }
+
+    private func finishDrop() {
+        isBusy = false
+        statusItem.button?.appearsDisabled = false
+        if !preferences.showDropWindow {
+            dropWindow.hide()
+        }
+        updateWindowSubtitle()
+    }
+
+    private enum Resolution: Sendable {
+        case device(Simulator)
+        case choose([Simulator])
+        case failed(String)
     }
 
     private enum Outcome: Sendable {

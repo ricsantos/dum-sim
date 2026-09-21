@@ -46,3 +46,15 @@ public enum Simctl {
         return out
     }
 }
+
+extension Simctl {
+    /// A PNG of the device's screen. `simctl` only writes to a path, never stdout.
+    public static func screenshot(device: Simulator) throws -> Data {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("dum-sim-\(UUID().uuidString).png")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        try run(["io", device.udid, "screenshot", "--type=png", url.path])
+        return try Data(contentsOf: url)
+    }
+}
