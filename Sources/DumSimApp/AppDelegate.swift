@@ -7,8 +7,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var dropView: DropView!
     private let feedback = FeedbackPopover()
     private let preferences = Preferences()
+    private let dropWindow = DropWindowController()
+    private let dragWatcher = DragWatcher()
     private var devices: [Simulator] = []
     private var isBusy = false
+    /// True while the panel is on screen only because a drag is in progress.
+    private var windowShownForDrag = false
 
     // MARK: - Lifecycle
 
@@ -19,6 +23,74 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.delegate = self
         statusItem.menu = menu
+
+        configureDropWindow()
+    }
+
+    private func configureDropWindow() {
+        dropWindow.onDrop = { [weak self] urls in self?.handleDrop(urls) }
+        dropWindow.onUserMove = { [weak self] in self?.preferences.hasCustomPosition = true }
+        updateWindowSubtitle()
+
+        // The status item reports a usable frame only once the menu bar lays it
+        // out, so place the panel later and then before every appearance.
+        Task { @MainActor in
+            for _ in 0 ..< 60 {
+                if DropWindowController.isUsableAnchor(self.statusItem.button?.window?.frame ?? .zero) {
+                    break
+                }
+                try? await Task.sleep(for: .milliseconds(50))
+            }
+            self.placeUnderIconIfDefault()
+        }
+
+        dragWatcher.onFileDragBegan = { [weak self] in self?.showWindowForDrag() }
+        dragWatcher.onFileDragEnded = { [weak self] in self?.hideWindowAfterDrag() }
+
+        if preferences.showDropWindow {
+            dropWindow.show()
+        }
+        if preferences.autoShowWhileDragging {
+            dragWatcher.start()
+        }
+    }
+
+    // MARK: - Floating panel
+
+    /// Keeps the panel under the icon until the user drags it somewhere else.
+    private func placeUnderIconIfDefault() {
+        guard !preferences.hasCustomPosition else { return }
+        dropWindow.moveUnder(statusItem.button)
+    }
+
+    private func showWindowForDrag() {
+        guard !dropWindow.isVisible else { return }
+        windowShownForDrag = true
+        updateWindowSubtitle()
+        placeUnderIconIfDefault()
+        dropWindow.show()
+    }
+
+    private func hideWindowAfterDrag() {
+        guard windowShownForDrag else { return }
+        windowShownForDrag = false
+        // A short delay lets a drop that landed on the panel finish first.
+        Task {
+            try? await Task.sleep(for: .milliseconds(400))
+            guard !self.preferences.showDropWindow, !self.isBusy else { return }
+            self.dropWindow.hide()
+        }
+    }
+
+    private func updateWindowSubtitle() {
+        let device = (try? resolvedDevice())?.displayName ?? "No simulator booted"
+        let destination: String
+        switch preferences.destinationChoice {
+        case "photos": destination = "Photos"
+        case "files": destination = "Files"
+        default: destination = "Auto"
+        }
+        dropWindow.updateSubtitle("\(device)\n\(destination)")
     }
 
     private func configureButton() {
@@ -28,10 +100,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         button.toolTip = "Drop files here to copy them to a simulator."
 
         let drop = DropView(frame: button.bounds)
-        drop.autoresizingMask = [.width, .height]
+        drop.translatesAutoresizingMaskIntoConstraints = false
         drop.onDrop = { [weak self] urls in self?.handleDrop(urls) }
         drop.onHighlight = { [weak self] on in self?.statusItem.button?.highlight(on) }
         button.addSubview(drop)
+        NSLayoutConstraint.activate([
+            drop.leadingAnchor.constraint(equalTo: button.leadingAnchor),
+            drop.trailingAnchor.constraint(equalTo: button.trailingAnchor),
+            drop.topAnchor.constraint(equalTo: button.topAnchor),
+            drop.bottomAnchor.constraint(equalTo: button.bottomAnchor),
+        ])
         dropView = drop
     }
 
@@ -72,6 +150,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         open.target = self
         open.state = preferences.openAfterDrop ? .on : .off
         menu.addItem(open)
+
+        menu.addItem(.separator())
+
+        let window = NSMenuItem(
+            title: "Keep Drop Window On Screen",
+            action: #selector(toggleDropWindow),
+            keyEquivalent: ""
+        )
+        window.target = self
+        window.state = preferences.showDropWindow ? .on : .off
+        menu.addItem(window)
+
+        let auto = NSMenuItem(
+            title: "Show Drop Window While Dragging",
+            action: #selector(toggleAutoShow),
+            keyEquivalent: ""
+        )
+        auto.target = self
+        auto.state = preferences.autoShowWhileDragging ? .on : .off
+        menu.addItem(auto)
+
+        let reset = NSMenuItem(
+            title: "Move Drop Window Under Icon",
+            action: #selector(resetWindowPosition),
+            keyEquivalent: ""
+        )
+        reset.target = self
+        menu.addItem(reset)
 
         menu.addItem(.separator())
 
@@ -146,10 +252,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func selectDevice(_ sender: NSMenuItem) {
         preferences.deviceUDID = sender.representedObject as? String
+        updateWindowSubtitle()
     }
 
     @objc private func selectDestination(_ sender: NSMenuItem) {
         preferences.destinationChoice = (sender.representedObject as? String) ?? "auto"
+        updateWindowSubtitle()
+    }
+
+    @objc private func toggleDropWindow() {
+        preferences.showDropWindow.toggle()
+        windowShownForDrag = false
+        updateWindowSubtitle()
+        if preferences.showDropWindow {
+            placeUnderIconIfDefault()
+            dropWindow.show()
+        } else {
+            dropWindow.hide()
+        }
+    }
+
+    @objc private func resetWindowPosition() {
+        preferences.hasCustomPosition = false
+        dropWindow.moveUnder(statusItem.button)
+        dropWindow.show()
+        preferences.showDropWindow = true
+    }
+
+    @objc private func toggleAutoShow() {
+        preferences.autoShowWhileDragging.toggle()
+        preferences.autoShowWhileDragging ? dragWatcher.start() : dragWatcher.stop()
     }
 
     @objc private func toggleOpenAfterDrop() {
@@ -203,6 +335,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             present(outcome)
             isBusy = false
             statusItem.button?.appearsDisabled = false
+            if !preferences.showDropWindow {
+                dropWindow.hide()
+            }
         }
     }
 

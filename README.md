@@ -72,9 +72,26 @@ a menu:
 | Target Simulator | Pin a device, or follow whichever one is booted. |
 | Destination | Automatic, always Photos, or always Files. |
 | Open Destination After Drop | Bring Photos or Files to the front after a copy. |
+| Keep Drop Window On Screen | Leave the floating panel visible. |
+| Show Drop Window While Dragging | Let the panel appear by itself during a drag. |
+| Move Drop Window Under Icon | Put the panel back below the menu bar icon. |
 | Copy Files... | A file panel, for when dragging is awkward. |
 
-The app has no dock icon and no window. It is an `LSUIElement` agent.
+The app has no dock icon and no window of its own. It is an `LSUIElement` agent.
+
+### The drop window
+
+macOS reads a drag to the top edge of the screen as a Spaces gesture, which makes
+the menu bar icon an awkward target. So the app also has a floating panel.
+
+1. Start dragging a file. The panel appears under the menu bar icon.
+2. Drop the file on the panel.
+3. The panel disappears again.
+
+Drag the panel anywhere you like and it stays there. "Move Drop Window Under Icon"
+returns it to the icon.
+
+The panel floats above full screen apps and joins every Space.
 
 ## CLI usage
 
@@ -140,7 +157,7 @@ the subpath.
 
 1. CLI. Done.
 2. Menu bar app with a drop target. Done.
-3. A floating window that follows the simulator, for people who want a visible target.
+3. Floating drop window. Done.
 4. A Finder "Share with simulator" extension, if the menu bar app is not enough.
 5. Distribution. The menu bar app embeds this CLI, so one notarised `DumSim.app`
    ships through a Homebrew cask and a GitHub release.

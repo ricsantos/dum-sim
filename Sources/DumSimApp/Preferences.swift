@@ -7,9 +7,16 @@ final class Preferences {
         static let deviceUDID = "targetDeviceUDID"
         static let destination = "destinationOverride"
         static let openAfterDrop = "openAfterDrop"
+        static let showDropWindow = "showDropWindow"
+        static let autoShowWhileDragging = "autoShowWhileDragging"
+        static let hasCustomPosition = "hasCustomPosition"
     }
 
     private let defaults = UserDefaults.standard
+
+    init() {
+        defaults.register(defaults: [Key.autoShowWhileDragging: true])
+    }
 
     /// `nil` means "whichever simulator is booted".
     var deviceUDID: String? {
@@ -26,6 +33,24 @@ final class Preferences {
     var openAfterDrop: Bool {
         get { defaults.bool(forKey: Key.openAfterDrop) }
         set { defaults.set(newValue, forKey: Key.openAfterDrop) }
+    }
+
+    /// Keeps the floating panel on screen between launches.
+    var showDropWindow: Bool {
+        get { defaults.bool(forKey: Key.showDropWindow) }
+        set { defaults.set(newValue, forKey: Key.showDropWindow) }
+    }
+
+    /// Shows the panel by itself while a file drag is in progress.
+    var autoShowWhileDragging: Bool {
+        get { defaults.bool(forKey: Key.autoShowWhileDragging) }
+        set { defaults.set(newValue, forKey: Key.autoShowWhileDragging) }
+    }
+
+    /// True once the user drags the panel somewhere. The panel then stays put.
+    var hasCustomPosition: Bool {
+        get { defaults.bool(forKey: Key.hasCustomPosition) }
+        set { defaults.set(newValue, forKey: Key.hasCustomPosition) }
     }
 
     var forcedDestination: Destination? {

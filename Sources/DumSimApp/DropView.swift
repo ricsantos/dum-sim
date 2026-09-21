@@ -15,8 +15,14 @@ final class DropView: NSView {
         fatalError("init(coder:) is not used")
     }
 
-    // The button below must still receive clicks, so this view never takes a hit.
-    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+    // AppKit finds a drop target with hitTest, so this view must accept hits.
+    // It forwards every mouse event to the status button underneath instead.
+    override func mouseDown(with event: NSEvent) { superview?.mouseDown(with: event) }
+    override func mouseUp(with event: NSEvent) { superview?.mouseUp(with: event) }
+    override func mouseDragged(with event: NSEvent) { superview?.mouseDragged(with: event) }
+    override func rightMouseDown(with event: NSEvent) { superview?.rightMouseDown(with: event) }
+    override func rightMouseUp(with event: NSEvent) { superview?.rightMouseUp(with: event) }
+    override func otherMouseDown(with event: NSEvent) { superview?.otherMouseDown(with: event) }
 
     override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
         guard !urls(from: sender).isEmpty else { return [] }
