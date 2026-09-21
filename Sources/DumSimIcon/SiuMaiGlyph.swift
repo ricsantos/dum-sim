@@ -9,10 +9,11 @@ public enum SiuMaiGlyph {
     /// The design grid. Every coordinate below is in these units.
     public static let grid: CGFloat = 18
 
-    private static let rimY: CGFloat = 9.6
+    // The dumpling sits low on the grid to leave room for the steam above it.
+    private static let rimY: CGFloat = 9.0
     private static let leftX: CGFloat = 3.0
     private static let rightX: CGFloat = 15.0
-    private static let bottomY: CGFloat = 2.5
+    private static let bottomY: CGFloat = 2.0
 
     /// Draws the dumpling into the current context, on an 18 by 18 grid.
     public static func draw(lineWidth: CGFloat = 1.35) {
@@ -24,6 +25,21 @@ public enum SiuMaiGlyph {
         wrapper.lineCapStyle = .round
         wrapper.lineJoinStyle = .round
         wrapper.stroke()
+
+        steam(lineWidth: lineWidth)
+    }
+
+    /// Three upright dashes, the middle one tallest. Curved wisps read as
+    /// antennae at this size, and fanned ones read as a sparkle.
+    private static func steam(lineWidth: CGFloat) {
+        for (x, top, length) in [(6.5, 15.5, 1.5), (9.0, 16.6, 1.9), (11.5, 15.5, 1.5)] {
+            let dash = NSBezierPath()
+            dash.move(to: NSPoint(x: x, y: top - length))
+            dash.line(to: NSPoint(x: x, y: top))
+            dash.lineWidth = lineWidth * 0.7
+            dash.lineCapStyle = .round
+            dash.stroke()
+        }
     }
 
     /// The wavy top edge of the wrapper, left to right.
@@ -67,8 +83,8 @@ public enum SiuMaiGlyph {
         path.move(to: NSPoint(x: 3.9, y: base))
         path.curve(
             to: NSPoint(x: 14.1, y: base),
-            controlPoint1: NSPoint(x: 5.0, y: 14.7),
-            controlPoint2: NSPoint(x: 13.0, y: 14.7)
+            controlPoint1: NSPoint(x: 5.0, y: 14.1),
+            controlPoint2: NSPoint(x: 13.0, y: 14.1)
         )
         path.close()
         return path
