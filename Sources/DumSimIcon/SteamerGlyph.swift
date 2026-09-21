@@ -75,9 +75,7 @@ public enum SteamerGlyph {
     /// The bundle icon: a warm bamboo square with the glyph knocked out in white.
     public static func appIcon(size: CGFloat) -> NSImage {
         NSImage(size: NSSize(width: size, height: size), flipped: false) { _ in
-            // macOS icons leave a margin, and the corner radius is about 22%.
-            let inset = size * 0.09
-            let plate = NSRect(x: inset, y: inset, width: size - inset * 2, height: size - inset * 2)
+            let plate = plateRect(in: size)
             let squircle = NSBezierPath(
                 roundedRect: plate,
                 xRadius: plate.width * 0.2237,
@@ -102,6 +100,29 @@ public enum SteamerGlyph {
             NSGraphicsContext.restoreGraphicsState()
             return true
         }
+    }
+
+    /// Masks supplied artwork into the macOS icon shape.
+    ///
+    /// A square source fills the plate. Anything outside the squircle is clipped,
+    /// so a picture with its own background still gets rounded corners.
+    public static func appIcon(from source: NSImage, size: CGFloat) -> NSImage {
+        NSImage(size: NSSize(width: size, height: size), flipped: false) { _ in
+            let plate = plateRect(in: size)
+            NSBezierPath(
+                roundedRect: plate,
+                xRadius: plate.width * 0.2237,
+                yRadius: plate.width * 0.2237
+            ).addClip()
+            source.draw(in: plate, from: .zero, operation: .sourceOver, fraction: 1)
+            return true
+        }
+    }
+
+    /// macOS icons leave a margin around the artwork.
+    private static func plateRect(in size: CGFloat) -> NSRect {
+        let inset = size * 0.09
+        return NSRect(x: inset, y: inset, width: size - inset * 2, height: size - inset * 2)
     }
 
     private static func scaleToGrid(_ size: CGFloat) {

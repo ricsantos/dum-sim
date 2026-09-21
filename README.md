@@ -1,5 +1,7 @@
 # dum-sim
 
+<img src="Resources/AppIcon.png" width="128" alt="A siu mai dumpling in a yellow wrapper">
+
 Drag and drop is gone from the iOS simulator. Xcode 27 replaced Simulator.app with
 Device Hub, and Device Hub does not accept a file dropped from Finder
 ([FB23368633](https://developer.apple.com/forums/thread/846994)).
@@ -14,6 +16,10 @@ dum-sim --app com.example.App seed.json # -> that app's Documents folder
 ```
 
 The name is a dim sum joke. Small parcels, delivered.
+
+The menu bar glyph is a bamboo steamer, drawn in code so it stays sharp and works
+as a macOS template image. `Resources/AppIcon.png` is the bundle icon, masked into
+the macOS icon shape at build time.
 
 ## Status
 

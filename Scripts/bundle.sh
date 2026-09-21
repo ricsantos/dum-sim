@@ -27,8 +27,9 @@ cp "$BIN/DumSimApp" "$APP/Contents/MacOS/DumSim"
 # The CLI rides along, so one bundle installs both.
 cp "$BIN/dum-sim" "$APP/Contents/MacOS/dum-sim"
 
-# The icon is drawn from source, never stored as a binary in the repository.
-"$BIN/make-icon" "$APP/Contents/Resources"
+# Resources/AppIcon.png is masked into the macOS icon shape. Without that file
+# the tool draws the steamer glyph instead.
+"$BIN/make-icon" "$APP/Contents/Resources" --source "$ROOT/Resources/AppIcon.png"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

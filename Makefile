@@ -14,7 +14,7 @@ app:
 icon:
 	swift build -c $(CONFIG) --product make-icon
 	mkdir -p build
-	"$$(swift build -c $(CONFIG) --show-bin-path)/make-icon" build --png
+	"$$(swift build -c $(CONFIG) --show-bin-path)/make-icon" build --source Resources/AppIcon.png --png
 	@echo "Wrote build/AppIcon.icns and build/AppIcon-1024.png"
 
 install: install-cli install-app
