@@ -1,7 +1,7 @@
 CONFIG ?= release
 PREFIX ?= $(HOME)/.local
 
-.PHONY: all cli app icon install install-cli install-app clean
+.PHONY: all cli app icon readme-icon install install-cli install-app clean
 
 all: app
 
@@ -16,6 +16,12 @@ icon:
 	mkdir -p build
 	"$$(swift build -c $(CONFIG) --show-bin-path)/make-icon" build --source Resources/AppIcon.png --png
 	@echo "Wrote build/AppIcon.icns and build/AppIcon-1024.png"
+
+# GitHub strips CSS from a README, so the rounded corners must be in the file.
+readme-icon: icon
+	cp build/AppIcon-1024.png Resources/icon.png
+	sips -Z 512 Resources/icon.png > /dev/null
+	@echo "Wrote Resources/icon.png"
 
 install: install-cli install-app
 
