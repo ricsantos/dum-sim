@@ -97,7 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func configureButton() {
         guard let button = statusItem.button else { return }
-        button.image = SteamerGlyph.statusImage()
+        button.image = SiuMaiGlyph.statusImage()
         button.toolTip = "Drop files here to copy them to a simulator."
 
         let drop = DropView(frame: button.bounds)

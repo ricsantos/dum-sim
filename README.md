@@ -17,8 +17,8 @@ dum-sim --app com.example.App seed.json # -> that app's Documents folder
 
 The name is a dim sum joke. Small parcels, delivered.
 
-The menu bar glyph is a bamboo steamer, drawn in code so it stays sharp and works
-as a macOS template image. `Resources/AppIcon.png` is the bundle icon, masked into
+The menu bar glyph is a siu mai, drawn in code so it stays sharp and works as a
+macOS template image. `Resources/AppIcon.png` is the bundle icon, masked into
 the macOS icon shape at build time. `make readme-icon` writes the rounded copy
 above, because GitHub strips CSS from a README.
 

@@ -28,7 +28,7 @@ cp "$BIN/DumSimApp" "$APP/Contents/MacOS/DumSim"
 cp "$BIN/dum-sim" "$APP/Contents/MacOS/dum-sim"
 
 # Resources/AppIcon.png is masked into the macOS icon shape. Without that file
-# the tool draws the steamer glyph instead.
+# the tool draws the siu mai glyph instead.
 "$BIN/make-icon" "$APP/Contents/Resources" --source "$ROOT/Resources/AppIcon.png"
 
 cat > "$APP/Contents/Info.plist" <<PLIST

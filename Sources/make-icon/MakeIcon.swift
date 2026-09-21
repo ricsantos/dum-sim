@@ -5,7 +5,7 @@ import Foundation
 /// Writes AppIcon.icns into the directory given on the command line.
 ///
 /// With `--source <path>` it masks that artwork into the macOS icon shape.
-/// Without it, or when the file is missing, it draws the steamer glyph instead.
+/// Without it, or when the file is missing, it draws the siu mai glyph instead.
 /// With `--png` it also writes AppIcon-1024.png, for a README or a release page.
 @main
 enum MakeIcon {
@@ -69,8 +69,8 @@ enum MakeIcon {
 
     private static func writePNG(pixels: Int, to url: URL) throws {
         let size = CGFloat(pixels)
-        let image = source.map { SteamerGlyph.appIcon(from: $0, size: size) }
-            ?? SteamerGlyph.appIcon(size: size)
+        let image = source.map { SiuMaiGlyph.appIcon(from: $0, size: size) }
+            ?? SiuMaiGlyph.appIcon(size: size)
 
         guard let tiff = image.tiffRepresentation,
               let rep = NSBitmapImageRep(data: tiff),
