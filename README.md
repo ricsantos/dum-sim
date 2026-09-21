@@ -13,6 +13,8 @@ dum-sim ~/Downloads/backup.sqlite       # -> Files, "On My iPhone"
 dum-sim --app com.example.App seed.json # -> that app's Documents folder
 ```
 
+The name is a dim sum joke. Small parcels, delivered.
+
 ## Status
 
 Both halves work: a CLI and a menu bar app you can drop files onto.
@@ -178,3 +180,6 @@ The Files app container route comes from
 ## Licence
 
 MIT.
+
+Not affiliated with Apple. Apple, Xcode, iOS, iPhone and iPad are trademarks of
+Apple Inc.
