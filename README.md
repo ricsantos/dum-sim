@@ -15,7 +15,7 @@ dum-sim --app com.example.App seed.json # -> that app's Documents folder
 
 ## Status
 
-Stage 1 of 2. The CLI works. A menu bar drop target is next.
+Both halves work: a CLI and a menu bar app you can drop files onto.
 
 ## Install
 
@@ -43,9 +43,40 @@ echo $PATH | tr ':' '\n' | grep '\.local/bin' || echo 'export PATH="$HOME/.local
 swift build -c release && cp .build/release/dum-sim ~/.local/bin/
 ```
 
-A Homebrew formula arrives with the menu bar app. See [Roadmap](#roadmap).
+### Install the menu bar app
 
-## Usage
+`DumSim.app` puts the drop target back. It carries the CLI inside it.
+
+```sh
+make install          # ~/.local/bin/dum-sim and /Applications/DumSim.app
+open /Applications/DumSim.app
+```
+
+Or build the bundle alone:
+
+```sh
+make app              # build/DumSim.app
+```
+
+A Homebrew cask arrives once the app is notarised. See [Roadmap](#roadmap).
+
+## Menu bar app
+
+Drop files on the menu bar icon. That is the whole workflow.
+
+The icon shows a popover with the result, then closes itself. Click the icon for
+a menu:
+
+| Item | Meaning |
+| --- | --- |
+| Target Simulator | Pin a device, or follow whichever one is booted. |
+| Destination | Automatic, always Photos, or always Files. |
+| Open Destination After Drop | Bring Photos or Files to the front after a copy. |
+| Copy Files... | A file panel, for when dragging is awkward. |
+
+The app has no dock icon and no window. It is an `LSUIElement` agent.
+
+## CLI usage
 
 ```
 dum-sim [options] <file>...      Copy files into a simulator.
@@ -108,7 +139,7 @@ the subpath.
 ## Roadmap
 
 1. CLI. Done.
-2. Menu bar app with a drop target. A drop copies the files to the booted simulator.
+2. Menu bar app with a drop target. Done.
 3. A floating window that follows the simulator, for people who want a visible target.
 4. A Finder "Share with simulator" extension, if the menu bar app is not enough.
 5. Distribution. The menu bar app embeds this CLI, so one notarised `DumSim.app`

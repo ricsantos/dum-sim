@@ -6,10 +6,12 @@ let package = Package(
     platforms: [.macOS(.v13)],
     products: [
         .executable(name: "dum-sim", targets: ["dum-sim"]),
+        .executable(name: "DumSimApp", targets: ["DumSimApp"]),
         .library(name: "DumSimKit", targets: ["DumSimKit"]),
     ],
     targets: [
         .target(name: "DumSimKit"),
         .executableTarget(name: "dum-sim", dependencies: ["DumSimKit"]),
+        .executableTarget(name: "DumSimApp", dependencies: ["DumSimKit"]),
     ]
 )
