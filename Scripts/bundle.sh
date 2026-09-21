@@ -15,6 +15,7 @@ cd "$ROOT"
 echo "Building ($CONFIG)..."
 swift build -c "$CONFIG" --product DumSimApp
 swift build -c "$CONFIG" --product dum-sim
+swift build -c "$CONFIG" --product make-icon
 
 BIN="$(swift build -c "$CONFIG" --show-bin-path)"
 
@@ -26,6 +27,9 @@ cp "$BIN/DumSimApp" "$APP/Contents/MacOS/DumSim"
 # The CLI rides along, so one bundle installs both.
 cp "$BIN/dum-sim" "$APP/Contents/MacOS/dum-sim"
 
+# The icon is drawn from source, never stored as a binary in the repository.
+"$BIN/make-icon" "$APP/Contents/Resources"
+
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -35,6 +39,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 	<string>en</string>
 	<key>CFBundleExecutable</key>
 	<string>DumSim</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>$BUNDLE_ID</string>
 	<key>CFBundleInfoDictionaryVersion</key>

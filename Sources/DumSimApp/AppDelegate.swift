@@ -1,4 +1,5 @@
 import AppKit
+import DumSimIcon
 import DumSimKit
 
 @MainActor
@@ -96,8 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func configureButton() {
         guard let button = statusItem.button else { return }
-        button.image = Self.statusImage()
-        button.image?.isTemplate = true
+        button.image = SteamerGlyph.statusImage()
         button.toolTip = "Drop files here to copy them to a simulator."
 
         let drop = DropView(frame: button.bounds)
@@ -112,21 +112,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             drop.bottomAnchor.constraint(equalTo: button.bottomAnchor),
         ])
         dropView = drop
-    }
-
-    private static func statusImage() -> NSImage? {
-        let candidates = [
-            "iphone.and.arrow.forward",
-            "square.and.arrow.down.on.square",
-            "arrow.down.to.line",
-            "iphone",
-        ]
-        for name in candidates {
-            if let image = NSImage(systemSymbolName: name, accessibilityDescription: "dum-sim") {
-                return image
-            }
-        }
-        return NSImage(named: NSImage.applicationIconName)
     }
 
     // MARK: - Menu

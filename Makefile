@@ -1,7 +1,7 @@
 CONFIG ?= release
 PREFIX ?= $(HOME)/.local
 
-.PHONY: all cli app install install-cli install-app clean
+.PHONY: all cli app icon install install-cli install-app clean
 
 all: app
 
@@ -10,6 +10,12 @@ cli:
 
 app:
 	Scripts/bundle.sh $(CONFIG)
+
+icon:
+	swift build -c $(CONFIG) --product make-icon
+	mkdir -p build
+	"$$(swift build -c $(CONFIG) --show-bin-path)/make-icon" build --png
+	@echo "Wrote build/AppIcon.icns and build/AppIcon-1024.png"
 
 install: install-cli install-app
 

@@ -60,7 +60,7 @@ Or build the bundle alone:
 make app              # build/DumSim.app
 ```
 
-A Homebrew cask arrives once the app is notarised. See [Roadmap](#roadmap).
+A Homebrew cask arrives once the app is notarised.
 
 ## Menu bar app
 
@@ -162,15 +162,6 @@ the copy is still running.
 
 **App container.** `xcrun simctl get_app_container <udid> <bundle-id> data`, then
 the subpath.
-
-## Roadmap
-
-1. CLI. Done.
-2. Menu bar app with a drop target. Done.
-3. Floating drop window. Done.
-4. A Finder "Share with simulator" extension, if the menu bar app is not enough.
-5. Distribution. The menu bar app embeds this CLI, so one notarised `DumSim.app`
-   ships through a Homebrew cask and a GitHub release.
 
 ## Credits
 
