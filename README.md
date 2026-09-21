@@ -19,14 +19,31 @@ Stage 1 of 2. The CLI works. A menu bar drop target is next.
 
 ## Install
 
-Requires Xcode 27 or later.
+Requires Xcode 27 or later. Build it, then put the binary on your `PATH`.
 
 ```sh
 git clone https://github.com/ricsantos/dum-sim.git
 cd dum-sim
 swift build -c release
-cp .build/release/dum-sim /usr/local/bin/
+mkdir -p ~/.local/bin
+cp .build/release/dum-sim ~/.local/bin/
 ```
+
+Check that `~/.local/bin` is on your `PATH`:
+
+```sh
+echo $PATH | tr ':' '\n' | grep '\.local/bin' || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+```
+
+`/usr/local/bin` works too, but it belongs to root and needs `sudo`.
+
+### Update after a change
+
+```sh
+swift build -c release && cp .build/release/dum-sim ~/.local/bin/
+```
+
+A Homebrew formula arrives with the menu bar app. See [Roadmap](#roadmap).
 
 ## Usage
 
@@ -94,6 +111,8 @@ the subpath.
 2. Menu bar app with a drop target. A drop copies the files to the booted simulator.
 3. A floating window that follows the simulator, for people who want a visible target.
 4. A Finder "Share with simulator" extension, if the menu bar app is not enough.
+5. Distribution. The menu bar app embeds this CLI, so one notarised `DumSim.app`
+   ships through a Homebrew cask and a GitHub release.
 
 ## Credits
 
